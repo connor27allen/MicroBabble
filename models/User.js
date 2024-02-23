@@ -55,9 +55,13 @@ const userSchema = new Schema(
       type: String,
       required: [true, 'you must enter a password'],
       minLength: [6, 'your password must be ...']
-    }
-  },
-);
+    },
+
+    mumbles: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Mumble'
+    }]
+  });
 
 userSchema.pre('save', async function(next) {
   if (!this.isNew || this.isModified('password')) {

@@ -1,7 +1,7 @@
 // Create a 'router' using express
 const router = require('express').Router();  //router is a CHILD of the server app
 // Import the User model
-const { User } = require('../models');
+const { User, Mumble } = require('../models');
 /*
 Create a POST route to register a new user and send the new user object back to the client
   - If mongoose throws an 11000 error(unique/already created), send back a json response with a 'User already exists' message
@@ -46,6 +46,49 @@ router.post('/register', async (req, res) => {
     });
   }
 });
+
+//get user by ID
+router.get('/user/:id', async (req, res) => {
+  const user_id = req.params.id;
+
+  const user = await User.findById(user_id).populate('mumbles', 'text');
+
+  res.json(user);
+});
+
+router.post('/mumble', async (req, res) => {
+  const { text, user_id } = req.body;
+
+  const mumble = await Mumble.create({
+    text: text,
+    user: user_id
+  })
+
+  const updatedUser = await User.findByIdAndUpdate(user_id, {
+    $push: {
+      mumbles: mumble._id
+    }
+  }, { new: true });
+
+  res.json(updatedUser);
+});
+
+router.get('/mumbles', async (req, res) => {
+  const mumbles = await Mumble.find().populate('user', 'username email');
+
+  res.json(mumbles);
+})
+
+
+// router.get('/users', async (req, res) => {
+//   const pageNumber = 1;
+
+//   const users = await User.find().sort({
+//     email: 1
+//   });
+
+//   res.json(users);
+// });
 
 // Export the router object
 module.exports = router;
